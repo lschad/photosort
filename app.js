@@ -91,9 +91,7 @@
 
     let files = [];
     if (flags.recursive == false) {
-      files = fs.readdirSync(source, { withFileTypes: true })
-        .filter(d => d.isFile())
-        .map(d => `${source}/${d.name}`);
+      files = glob.sync(`${source}/*`, { nodir: true });
     } else {
       files = glob.sync(`${source}/**/*`, { nodir: true });
     }
