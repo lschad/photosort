@@ -3,10 +3,20 @@
 
   let fs = require('fs');
   let util = require('./utils');
-  var mkdirp = require('mkdirp');
+  let mkdirp = require('mkdirp');
+  let args = require('args');
+  let glob = require('glob');
 
-  let source = 'C:\\Users\\lsc\\Downloads\\takeout\\Google Photos';
-  let targetBase = 'E:\\SortedPhotos';
+  let source = null;
+  let targetBase = null;
+
+  args
+    .option('source', 'Path where images will be searched for.')
+    .option('target', 'Path where images will be stored.')
+    .option('recursive', 'Defines if images should be searched for recursively.', false)
+    .example('./app --source /home/lsc/pictures --target /photos --recursive', 'Copy pictures recursively.');
+
+  const flags = args.parse(process.argv)
 
   let getTarget = function (obj) {
     let exif = obj.exif;
@@ -71,13 +81,28 @@
   };
 
   let run = function () {
-    let files = fs.readdirSync(source);
-    let gindex = 0;
 
+    if (!flags.source || !flags.target) {
+      console.warn('You need to specify source and target paths.\n\nType -h/--help for more information.');
+      process.exit(1);
+    }
+    source = flags.source;
+    targetBase = flags.target;
+
+    let files = [];
+    if (flags.recursive == false) {
+      files = fs.readdirSync(source, { withFileTypes: true })
+        .filter(d => d.isFile())
+        .map(d => `${source}/${d.name}`);
+    } else {
+      files = glob.sync(`${source}/**/*`, { nodir: true });
+    }
+
+    let gindex = 0;
     util.processArray(files, function (file) {
       return new Promise(function (resolve, reject) {
 
-        util.getImageObject(`${source}\\${file}`)
+        util.getImageObject(`${file}`)
           .then(updateImageObject)
           .then(makeFolderIfNeccesary)
           .then(copyImage)
@@ -87,9 +112,10 @@
           })
           .then(resolve)
           .catch(function (err) {
-            console.error(`ERROR: ${err}`)
+            console.error(`Failed to copy image: ${err}`)
             resolve();
           });
+
       });
     });
   };

@@ -54,8 +54,7 @@
                     let exif = util.stringToObject(res);
 
                     if (err || !exif) {
-                        console.info(`Failed to parse ${file}`);
-                        reject(err);
+                        reject(`Failed to parse ${file}`);
                     } else {
                         resolve(exif);
                     }
