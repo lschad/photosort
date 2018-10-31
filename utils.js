@@ -1,9 +1,9 @@
 (function () {
     'use strict'
 
-    var gm = require('gm');
+    let gm = require('gm');
 
-    var util = module.exports = {
+    let util = module.exports = {
 
         stringToObject: function (str) {
             str = str || '';
@@ -27,11 +27,11 @@
         // https://stackoverflow.com/a/7712335
         stringToDateTime: function (str) {
             str = str || '';
-            var pattern = /(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/;
-            var dateArray = pattern.exec(str);
+            let pattern = /(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/;
+            let dateArray = pattern.exec(str);
             if (!dateArray || dateArray.length < 6) return null;
 
-            var dateObject = new Date(
+            let dateObject = new Date(
                 (+dateArray[1]),
                 (+dateArray[2]) - 1, // Careful, month starts at 0!
                 (+dateArray[3]),
@@ -68,7 +68,7 @@
             // return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             let format = 'xxxxxxxx' + delimiter + 'xxxx' + delimiter + '4xxx' + delimiter + 'yxxx' + delimiter + 'xxxxxxxxxxxx';
             return format.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         },
@@ -105,7 +105,7 @@
         },
 
         processArray: function (array, fn) {
-            var index = 0;
+            let index = 0;
 
             return new Promise(function (resolve, reject) {
 
