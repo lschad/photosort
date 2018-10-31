@@ -16,7 +16,9 @@
     .option('source', 'Path where images will be searched for.')
     .option('target', 'Path where images will be stored.')
     .option('recursive', 'Defines if images should be searched for recursively.', false)
-    .example('./app --source /home/lsc/pictures --target /photos --recursive', 'Copy pictures recursively.');
+    .option('extension', 'A list of accepted extensions. * to catch all.', ['*'])
+    .example('./app --source /home/lsc/pictures --target /photos --recursive', 'Copy pictures recursively.')
+    .example('./app -s /source -t /target -f jpg -f jpeg', 'Specify a list of accept extensions.');
 
   const flags = args.parse(process.argv)
 
@@ -36,7 +38,7 @@
       } else {
         obj.Filename = `${obj.ImageUniqueId}`
         obj.TargetBase = path.join(targetBase, 'unknown');
-        obj.TargetPath = path.join(obj.TargetBase , `${obj.Filename}.${obj.Extension}`);
+        obj.TargetPath = path.join(obj.TargetBase, `${obj.Filename}.${obj.Extension}`);
       }
 
       resolve(obj);
@@ -95,6 +97,15 @@
       files = glob.sync(`${source}/*`, { nodir: true });
     } else {
       files = glob.sync(`${source}/**/*`, { nodir: true });
+    }
+
+    if (flags.extension.indexOf('*') < 0) {
+      files = files.filter(function (el) {
+        var ext = util.getExtension(el).toLowerCase();
+        var accepted = flags.extension.indexOf(ext) > -1;
+
+        return accepted;
+      });
     }
 
     let gindex = 0;

@@ -128,7 +128,11 @@
 
 
             return bufferA.equals(bufferB) === true;
-        }
+        },
+
+        getExtension: function (filename) {
+            return filename.substring(filename.lastIndexOf('.') + 1);
+        },
 
     };
 })();
