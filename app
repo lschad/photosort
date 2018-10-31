@@ -1,3 +1,3 @@
 #! /bin/bash
 
-node app.js $0
+node app.js "$@"
