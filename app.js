@@ -35,8 +35,8 @@
         obj.TargetPath = t.fullPath();
       } else {
         obj.Filename = `${obj.ImageUniqueId}`
-        obj.TargetBase = `${targetBase}\\unknown`;
-        obj.TargetPath = path.join(targetBase, `${obj.Filename}.${obj.Extension}`);
+        obj.TargetBase = path.join(targetBase, 'unknown');
+        obj.TargetPath = path.join(obj.TargetBase , `${obj.Filename}.${obj.Extension}`);
       }
 
       resolve(obj);
