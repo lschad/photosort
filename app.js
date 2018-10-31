@@ -6,6 +6,7 @@
   let mkdirp = require('mkdirp');
   let args = require('args');
   let glob = require('glob');
+  let chalk = require('chalk');
 
   let source = null;
   let targetBase = null;
@@ -105,12 +106,12 @@
           .then(makeFolderIfNeccesary)
           .then(copyImage)
           .then(function (obj) {
-            console.info(`[${gindex++}] Copied image  ${obj.Filename}  to  ${obj.TargetBase}`);
+            console.info(chalk.gray(`[${gindex++}] Copied ${chalk.white(obj.Filename)} to ${chalk.white(obj.TargetBase)}`));
             return util.simplePromise(obj);
           })
           .then(resolve)
           .catch(function (err) {
-            console.error(`Failed to copy image: ${err}`)
+            console.error(chalk.yellow(`Failed to copy image: ${err}`))
             resolve();
           });
 
