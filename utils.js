@@ -2,6 +2,8 @@
     'use strict'
 
     let gm = require('gm');
+    let path = require('path');
+    let fs = require('fs');
 
     let util = module.exports = {
 
@@ -95,12 +97,13 @@
             if (ms < 10) ms = `00${ms}`;
             else if (ms < 100) ms = `0${ms}`;
 
+            // todo: path.join
             let basePath = `${base}\\${year}\\${month}\\${day}`;
             let dateStamp = `${year}${month}${day}`;
             let timeStamp = `${hour}${minute}${second}${ms}Z`;
-            let fullStamp = `${dateStamp}T${timeStamp}.${obj.Extension.toLowerCase()}`;
+            let fullStamp = `${dateStamp}T${timeStamp}`;
             let fileName = `IMG_${fullStamp}`;
-            return { basePath: basePath, fileName: fileName, fullPath: function () { return `${basePath}\\${fileName}`; } };
+            return { basePath: basePath, fileName: fileName, fullPath: function () { return `${basePath}\\${fileName}.${obj.Extension}`; } };
         },
 
         processArray: function (array, fn) {
@@ -118,6 +121,14 @@
                 next();
             });
         },
+
+        filesAreEqual: function (a, b) {
+            var bufferA = fs.readFileSync(a);
+            var bufferB = fs.readFileSync(b);
+
+
+            return bufferA.equals(bufferB) === true;
+        }
 
     };
 })();

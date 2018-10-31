@@ -1,6 +1,7 @@
 (function () {
   'use strict'
 
+  let path = require('path');
   let fs = require('fs');
   let util = require('./utils');
   let mkdirp = require('mkdirp');
@@ -19,30 +20,13 @@
 
   const flags = args.parse(process.argv)
 
-  let getTarget = function (obj) {
-    let exif = obj.exif;
-    let file = obj.file;
-
-    let dt = util.stringToDateTime(exif.DateTime);
-    let target = targetBase + '\\unknown';
-    if (!!dt) {
-      let id = exif['ImageUniqueId'] || util.uuidv4();
-      let fileName = id + '.ext';
-      let filePath = targetBase + '\\' + dt.getFullYear() + '\\' + (dt.getMonth() + 1);
-
-      target = filePath + '\\' + fileName;
-    }
-
-    obj.target = target;
-    return util.simplePromise(obj);
-  };
-
   let updateImageObject = function (obj) {
     return new Promise(function (resolve, reject) {
 
       if (!obj.ImageUniqueId) {
         obj.ImageUniqueId = util.uuidv4('');
       }
+      obj.Extension = obj.Extension.toLowerCase();
       obj.DateTime = util.stringToDateTime(obj.DateTime);
       if (!!obj.DateTime) {
         let t = util.targetPathFromImageObj(targetBase, obj);
@@ -50,9 +34,9 @@
         obj.TargetBase = t.basePath;
         obj.TargetPath = t.fullPath();
       } else {
-        obj.Filename = `${obj.ImageUniqueId}.${obj.Extension.toLowerCase()}`
+        obj.Filename = `${obj.ImageUniqueId}`
         obj.TargetBase = `${targetBase}\\unknown`;
-        obj.TargetPath = `${obj.TargetBase}\\${obj.Filename}`;
+        obj.TargetPath = path.join(targetBase, `${obj.Filename}.${obj.Extension}`);
       }
 
       resolve(obj);
@@ -70,6 +54,21 @@
 
   let copyImage = function (obj) {
     return new Promise(function (resolve, reject) {
+
+      // check if file exists
+      if (fs.existsSync(obj.TargetPath)) {
+        if (util.filesAreEqual(obj.SourcePath, obj.TargetPath)) {
+          reject(`${chalk.white(obj.TargetPath)} already exists and equals the source. Skipped.`);
+        } else {
+          let index = 1;
+          let fn = '';
+          while (fs.existsSync(obj.TargetPath)) {
+            obj.TargetPath = path.join(obj.TargetBase, `${obj.Filename}_${index++}.${obj.Extension}`);
+          }
+        }
+      }
+
+      // copy image
       var read = fs.createReadStream(obj.SourcePath);
       var write = fs.createWriteStream(obj.TargetPath)
 
@@ -78,6 +77,7 @@
       write.on('close', function () { resolve(obj); });
 
       read.pipe(write);
+
     });
   };
 
@@ -106,7 +106,7 @@
           .then(makeFolderIfNeccesary)
           .then(copyImage)
           .then(function (obj) {
-            console.info(chalk.gray(`[${gindex++}] Copied ${chalk.white(obj.Filename)} to ${chalk.white(obj.TargetBase)}`));
+            console.info(chalk.gray(`[${gindex++}] Copied ${chalk.white(obj.SourcePath)} to ${chalk.white(obj.TargetPath)}`));
             return util.simplePromise(obj);
           })
           .then(resolve)
